@@ -1,0 +1,75 @@
+// Include the V5 Library
+#include "vex.h"
+  
+// Allows for easier use of the VEX Library
+using namespace vex;
+
+double Magnet5_duration = 500.0;
+int Brain_precision = 0, Console_precision = 0;
+
+float myVariable;
+
+event message1 = event();
+
+// "when started" hat block
+int whenStarted1() {
+  RoboticArm1.setMasteringValues(1862.0,2211.0,1875.0,589.0);
+  RoboticArm1.setToolTipOffset(-0.7, 0.0, -2.0);
+  Magnet5_duration = 500;
+  Magnet5.setPower(100.0);
+  EntryMotor.setVelocity(80.0, percent);
+  TransportMotor.setVelocity(20.0, percent);
+  ExitMotor.setVelocity(70.0, percent);
+  DiverterMotor.setVelocity(30.0, percent);
+  // LOAD AND DIVERT RED DISK
+  EntryMotor.spin(forward);
+  wait(2.0, seconds);
+  EntryMotor.stop();
+  DiverterMotor.spinToPosition(90.0, degrees, true);
+  // TRANSPORT THE DISK
+  TransportMotor.spin(forward);
+  wait(5.0, seconds);
+  TransportMotor.stop();
+  // EXIT DISK
+  ExitMotor.spin(forward);
+  wait(2.0, seconds);
+  ExitMotor.stop();
+  // RESET
+  DiverterMotor.spinToPosition(-90.0, degrees, true);
+  Brain.Screen.print("PRESS WHEN GREEN DISK LOADED");
+  return 0;
+}
+
+// "when EStop pressed" hat block
+void onevent_EStop_pressed_0() {
+  RoboticArm1.emergencyStop();
+}
+
+// "when Brain screen pressed" hat block
+void onevent_Brain_screen_pressed_0() {
+  EntryMotor.spin(forward);
+  wait(2.0, seconds);
+  EntryMotor.stop();
+  // PASS GREEN DISK
+  TransportMotor.spin(forward);
+  wait(10.0, seconds);
+  TransportMotor.stop();
+}
+
+
+int main() {
+  // register event handlers
+  EStop.pressed(onevent_EStop_pressed_0);
+  Brain.Screen.pressed(onevent_Brain_screen_pressed_0);
+
+  wait(15, msec);
+  // post event registration
+
+  // set default print color to black
+  printf("\033[30m");
+
+  // wait for rotation sensor to fully initialize
+  wait(30, msec);
+
+  whenStarted1();
+}
